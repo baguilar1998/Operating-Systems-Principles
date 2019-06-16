@@ -1,8 +1,8 @@
 import java.util.*;
 public class Teacher implements Runnable{
-	public static Queue<String> questionInbox = new LinkedList<String>();
+	public static Queue<Question> questionInbox = new LinkedList<Question>();
 	public static Queue<Student> onlineChatQueue = new LinkedList<Student>();
-	
+	private Timer timer;
 	private long officeHoursStart, onlineSessionStart;
 	
 	public Teacher() {
@@ -26,12 +26,13 @@ public class Teacher implements Runnable{
 	public void arriveToOffice() {
 		System.out.println("["+Main.currentTime()+"] "+"The professor has arrived to the office their office");
 		if(questionInbox.size()!=0) {
+			timer = new Timer();
 			System.out.println("["+Main.currentTime()+"] "+ "The professor has " + questionInbox.size() + " emails in his inbox");
-			// Allow the professor to answer some questions before his office hours start
+			/*// Allow the professor to answer some questions before his office hours start
 			while(true) {
-				//System.out.println(officeHoursStart + " "+ Main.currentTime());
+				System.out.println(questionInbox);
 				if (officeHoursStart < Main.currentTime()) break;
-			}
+			}*/
 		}
 	}
 	
