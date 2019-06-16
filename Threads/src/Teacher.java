@@ -1,10 +1,19 @@
 import java.util.*;
 public class Teacher implements Runnable{
-
+	public static Queue<String> questionInbox = new LinkedList<String>();
+	public static Queue<Student> onlineChatQueue = new LinkedList<Student>();
+	
+	private long officeHoursStart, onlineSessionStart;
+	
+	public Teacher() {
+		officeHoursStart = (long) ((Math.random() *2000) + 2000);
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
+		arriveToOffice();
+		startOfficeHours();
 	}
 
 	/**
@@ -15,7 +24,15 @@ public class Teacher implements Runnable{
 	 * not arrived to his office yet
 	 */
 	public void arriveToOffice() {
-		
+		System.out.println("["+Main.currentTime()+"] "+"The professor has arrived to the office their office");
+		if(questionInbox.size()!=0) {
+			System.out.println("["+Main.currentTime()+"] "+ "The professor has " + questionInbox.size() + " emails in his inbox");
+			// Allow the professor to answer some questions before his office hours start
+			while(true) {
+				//System.out.println(officeHoursStart + " "+ Main.currentTime());
+				if (officeHoursStart < Main.currentTime()) break;
+			}
+		}
 	}
 	
 	/**
@@ -24,7 +41,7 @@ public class Teacher implements Runnable{
 	 * if he can't answer all of them
 	 */
 	public void startOfficeHours() {
-		
+		System.out.println("["+Main.currentTime()+"] "+"The professor has started his office hours");
 	}
 	
 	/**
