@@ -4,14 +4,14 @@ public class Student implements Runnable{
 	private int typeAQuestions, typeBQuestions, studentID; 
 	private String studentName;
 	private String [] questions;
-	private boolean leftChatSession;
+	boolean inChat, askedQuestion;
 	
 	public Student(int a, int b, int id) {
 		typeAQuestions = a;
 		typeBQuestions = b;
 		questions = new String[typeAQuestions];
 		studentID = id;
-		leftChatSession = false;
+		inChat = false;
 		setStudentName();
 	}
 	
@@ -27,6 +27,7 @@ public class Student implements Runnable{
 		return typeBQuestions;
 	}
 	
+
 	@Override
 	public void run() {
 		System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
@@ -55,8 +56,22 @@ public class Student implements Runnable{
 				System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 						+ " is waiting to chat with the professor");
 				
-				//Check if the online chat session is still going
-				askTypeBQuestions();
+				while(!inChat && !Teacher.onlineChatSessionEnded) {}
+				
+				if(!Teacher.onlineChatSessionEnded) {
+					while(typeBQuestions!=0) {
+						//Check if the online chat session is still going
+						askTypeBQuestions();
+						while(!Teacher.didAnswer) {}
+						typeBQuestions--;
+						
+					}	
+					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+							+ " has left the chat session");
+				} else {
+					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+							+ " could not chat with the teacher cause the chat session hours had ended");
+				}
 			}
 					
 			// Check if the online office hours are still up
@@ -127,6 +142,10 @@ public class Student implements Runnable{
 	 * that they need.
 	 */
 	private synchronized void askTypeBQuestions() {
+		askedQuestion = false;
+		System.out.println("["+Main.currentTime()+"] " + studentName 
+				+ " asked a question to the professor in the chat");
+		askedQuestion = true;
 		
 	}//askTypeBQuestions
 	

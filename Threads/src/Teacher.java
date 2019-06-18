@@ -4,7 +4,7 @@ public class Teacher {
 	public static Queue<Question> questionInbox = new LinkedList<Question>();
 	public static Queue<Student> onlineChatQueue = new LinkedList<Student>();
 	private long officeHoursStart, onlineSessionStart;
-	public static boolean officeHoursEnded, onlineChatSessionEnded;
+	public static boolean officeHoursEnded, onlineChatSessionEnded, didAnswer;
 	
 	public Teacher() {
 		officeHoursStart = (long) ((Math.random() *2000) + 2000);
@@ -52,9 +52,31 @@ public class Teacher {
 	 */
 	public synchronized void startOnlineChatSession() {
 		System.out.println("["+Main.currentTime()+"] "+"The professor has started the online chat session");
+		onlineChatSessionEnded = false;
 	}
 	
 	public synchronized void chatWithStudent() {
+		
+		if(onlineChatQueue.size() != 0) {
+			
+			Student s = onlineChatQueue.remove();
+			s.inChat = true;
+			while(s.getTypeBQuestions() != 0) {
+				while(!s.askedQuestion) {}
+				System.out.println("["+Main.currentTime()+"] "+"The professor is answering " + s.getStudentName() + " question");
+				try {
+					Thread.currentThread().sleep(500);
+					System.out.println("["+Main.currentTime()+"] "+"The professor has answered " + s.getStudentName() + " question");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			System.out.println("["+Main.currentTime()+"] "+"The professor is done chatting with " + s.getStudentName());
+
+			
+		}
 		
 	}
 	
@@ -64,7 +86,8 @@ public class Teacher {
 	 * type A questions
 	 */
 	public synchronized void endOnlineChatSession() {
-		
+		System.out.println("["+Main.currentTime()+"] "+"The professor has ended the online chat session");
+		onlineChatSessionEnded = true;
 	}
 	
 	/**

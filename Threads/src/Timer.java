@@ -43,6 +43,19 @@ public class Timer implements Runnable{
 		teacher.startOfficeHours();
 		teacher.startOnlineChatSession();
 		
+		while(endChatSession != counter) {
+			teacher.chatWithStudent();
+			try {
+				Thread.currentThread().sleep((long) (Math.random()*500));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			++counter;
+		}
+		
+		teacher.endOnlineChatSession();
+		
 		// Could start the chat session at any point or not
 		// Lets assume he starts it right away
 	}
