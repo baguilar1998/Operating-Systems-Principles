@@ -11,11 +11,8 @@ public class Main {
 		int students = Integer.parseInt(args[0]);
 		final int typeAQuestions = 4, typeBQuestions = 3;
 
-		// Create the teacher object so we can set up the teachers inbox
-		// for any questions that students want to email
 		Teacher teacher  = new Teacher();
 		
-		// Let the students enter the lab first
 		for(int i = 0;i<students;i++) {
 			int numOfAQuestions = (int) (Math.random()*typeAQuestions)+1;
 			int numOfBQuestions =(int) (Math.random()*typeBQuestions)+1;
@@ -23,10 +20,11 @@ public class Main {
 			Thread t = new Thread(student);
 			t.start();
 		}
+		
 		isLabOpen = true;
-		// Let the teacher arrive to the office
-		Thread t = new Thread(teacher);
-		t.start();
+		Timer t = new Timer(teacher);
+		Thread timer = new Thread(t);
+		timer.start();
 	}
 	
 	public static long currentTime() {

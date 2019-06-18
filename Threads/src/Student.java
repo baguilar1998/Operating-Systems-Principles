@@ -23,47 +23,54 @@ public class Student implements Runnable{
 		return studentName;
 	}
 	
+	public int getTypeBQuestions() {
+		return typeBQuestions;
+	}
+	
 	@Override
 	public void run() {
-		System.out.println("["+Main.currentTime()+"]"+" Student " + studentID + " is waiting to enter the lab");
-		/**
-		 * Once all of the students (given in args[0]) has arrived. The lab will open and the first students
-		 * that enter the lab before its full will get in. (e.g. Student 1 could be the first student to arrive at the lab, but
-		 * he could be the 3rd person to enter the lab). All students busy wait while the lab is not open
-		 */
-		while(!Main.isLabOpen) {}
-		/**
-		 * As soon as the lab opens, you only want one student to enter at a time. If two students enter in at the same time
-		 * this will cause a data coherence problem (we need to check if the lab is full for every student that tries to enter in)
-		 * 
-		 */
-		try {
-			Thread.currentThread().interrupt();
-			if(Thread.currentThread().isInterrupted()) {
-				// If the lab is full, the student cannot enter in and they are terminated
-				if(Main.computerLab.size() == Main.capacity) {
-					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID + " cannot enter the lab because it is now full FALSE");
-				} else {
-					// The student enters in the lab and starts performing their tasks
-					Main.computerLab.add(Thread.currentThread());
-					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID + " has now entered the lab TRUE");
-					askTypeAQuestions();
-					if(typeBQuestions != 0) {
-						Teacher.onlineChatQueue.add(this);
-						// Busy wait either if the student is waiting to chat for the teacher
-						// or if the student did not finish chatting with the teacher
-						while(!leftChatSession) {}
-						askTypeBQuestions();
-					}
-					// wait until the student is finished with their chat session then cancel
-					browseInternet();
-					Main.computerLab.remove(this);
-					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID + " has left the computer lab");
-				}
+		System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+				+ " is waiting to enter the lab");
+
+		while(!Main.isLabOpen) {} // busy wait while the lab is not open
+
+		
+		if(Main.computerLab.size() == Main.capacity) {
+			System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+					+ " cannot enter the lab because it is now full FALSE");
+		} else {
+			Main.computerLab.add(Thread.currentThread());
+			
+			System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+					+ " has now entered the lab TRUE");
+			
+			if(typeAQuestions != 0 && !Teacher.officeHoursEnded) {
+				askTypeAQuestions();	
 			}
-		}catch (Exception e) {
-			// Put an error message here
+			
+			if(typeBQuestions != 0 && !Teacher.officeHoursEnded) {
+				Teacher.onlineChatQueue.add(this);
+				// Busy wait either if the student is waiting to chat for the teacher
+				// or if the student did not finish chatting with the teacher
+				System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+						+ " is waiting to chat with the professor");
+				
+				//Check if the online chat session is still going
+				askTypeBQuestions();
+			}
+					
+			// Check if the online office hours are still up
+			if (!Teacher.officeHoursEnded) {
+				browseInternet();
+			}
+			
+			System.out.println("["+Main.currentTime()+"]"+" Student " 
+			+ studentID + " has left the computer lab HE HAS LEFT");
+			
+			Main.computerLab.remove(this);
 		}
+
+
 
 	}
 
@@ -72,49 +79,79 @@ public class Student implements Runnable{
 	 * that they need. As soon as they are done, they
 	 * go on ahead and start asking their type B questions
 	 */
-	private void askTypeAQuestions() {
+	private synchronized void askTypeAQuestions() {
 		int counter = 0;
-		System.out.println("["+Main.currentTime()+"] " + studentName + " has " + typeAQuestions + " questions that he wants to email the professor about");
+		
+		System.out.println("["+Main.currentTime()+"] " + studentName + " has " 
+		+ typeAQuestions + " question(s) that he wants to email the professor about");
+		
 		while(typeAQuestions != 0) {
+			
 			try {
-				System.out.println("["+Main.currentTime()+"] " + studentName + " is figuring out the question they want to ask");
-				// Releaes the student from the CPU to allow the student to think about their question
+				
+				System.out.println("["+Main.currentTime()+"] " + studentName 
+						+ " is figuring out the question that they want to ask");
+				
+				// Releases the student from the CPU to allow the student to think about their question
 				Thread.currentThread().yield();
-				System.out.println("["+Main.currentTime()+"] " + studentName + " figured out their question");
+				
+				// Incrreases the priority of the student because they need to send an email
 				Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-				System.out.println("["+Main.currentTime()+"] " + studentName + " is emailing the professor their question");
+				System.out.println("["+Main.currentTime()+"] " + studentName
+						+ " is emailing the professor their question");
+				
+				// Simulate the student writing the email and sending it
 				Thread.currentThread().sleep((long) ((Math.random()*5000)+1000));
 				Teacher.questionInbox.add(new Question(this,Main.currentTime()));
-				System.out.println("["+Main.currentTime()+"] " + studentName + " has emailed the professor their question");
-				Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
-				typeAQuestions--;
-			}catch(Exception e) {
 				
+				System.out.println("["+Main.currentTime()+"] " + studentName 
+						+ " has emailed the professor their question");
+				
+				Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
+				
+				typeAQuestions--;
+				
+			}catch(Exception e) {
+				System.out.println("["+Main.currentTime()+"] " + studentName + " has " 
+						+ typeAQuestions + " been interrupted!");
 			}
 		}
-		System.out.println("["+Main.currentTime()+"] " + studentName + " emailed all possible questions that they needed to email");
-	}
+		
+		System.out.println("["+Main.currentTime()+"] " + studentName 
+				+ " emailed the questions that they needed to email");
+		
+	}//askTypeAQuestions
 	
 	/**
 	 * Students can ask the amount of typeB questions
 	 * that they need.
 	 */
-	private void askTypeBQuestions() {
+	private synchronized void askTypeBQuestions() {
 		
-	}
+	}//askTypeBQuestions
+	
 	
 	/**
 	 * As soon as they are done, they
 	 * just simply browse the internet until the online
 	 * office hours end
 	 */
-	private void browseInternet() {
+	private synchronized void browseInternet() {
 		// Use the sleep method and let the students browse the internet
 		// until the online chat session has ended
-		try {
-			//
+		System.out.println("["+Main.currentTime()+"] " + studentName 
+				+ " is browsing the internet");
+		/*try {
+			for(Thread s: Main.computerLab) {
+				if (s.isAlive() && s.getId() > Thread.currentThread().getId()) {
+					s.join();		
+				}
+			}
+			while(!Teacher.officeHoursEnded) {}
+			Thread.currentThread().interrupt();
+			//if(Thread.currentThread().isInterrupted())
 		} catch (Exception e) {
 			
-		}
-	}
+		}*/
+	}//browseInternet
 }

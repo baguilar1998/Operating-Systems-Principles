@@ -1,5 +1,6 @@
 
 public class Question {
+	
 	private long time; 
 	private Student student;
 	
@@ -10,7 +11,14 @@ public class Question {
 	
 	@Override
 	public String toString() {
-		return student.getStudentName() + " has asked a question at " + time;
+		return student.getStudentName() + " which was sent at " + time + " Eastern Standard Time";
 	}
 	
+	public Student getStudent() {
+		return student;
+	}
+	
+	public long getAge() {
+		return time;
+	}
 }
