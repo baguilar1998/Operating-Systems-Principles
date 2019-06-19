@@ -4,7 +4,7 @@ public class Student implements Runnable{
 	private int typeAQuestions, typeBQuestions, studentID; 
 	private String studentName;
 	private String [] questions;
-	boolean inChat, askedQuestion;
+	boolean inChat, askedQuestion, isLastQuestion;
 	
 	public Student(int a, int b, int id) {
 		typeAQuestions = a;
@@ -12,24 +12,53 @@ public class Student implements Runnable{
 		questions = new String[typeAQuestions];
 		studentID = id;
 		inChat = false;
+		isLastQuestion = false;
 		setStudentName();
 	}
 	
-	public void setStudentName() {
+	public synchronized void setStudentName() {
 		studentName = "Student " + studentID;
 	}
 	
-	public String getStudentName() {
+	public synchronized String getStudentName() {
 		return studentName;
 	}
 	
-	public int getTypeBQuestions() {
+	public synchronized int getTypeBQuestions() {
 		return typeBQuestions;
 	}
 	
+	public synchronized boolean didAskQuestion() {
+		return askedQuestion;
+	}
+	
+	public synchronized void setLastQuestion(boolean s) {
+		isLastQuestion = s;
+	}
+	
+	public synchronized boolean lastQuestion() {
+		return isLastQuestion;
+	}
+	
+	public synchronized boolean isStudentInChat() {
+		return inChat;
+	}
+	
+	public synchronized void setStudentInChat(boolean c) {
+		inChat = c;
+	}
+	
+	public synchronized void askedQuestion(boolean asked) {
+		askedQuestion = asked;
+	}
+	
+	public synchronized void askedTypeBQuestion() {
+		typeBQuestions--;
+	}
 
 	@Override
 	public void run() {
+		
 		System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 				+ " is waiting to enter the lab");
 
@@ -54,21 +83,30 @@ public class Student implements Runnable{
 				// Busy wait either if the student is waiting to chat for the teacher
 				// or if the student did not finish chatting with the teacher
 				System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
-						+ " is waiting to chat with the professor");
+						+ " is waiting to chat with the professor " +typeBQuestions);
 				
-				while(!inChat && !Teacher.onlineChatSessionEnded) {}
+				//Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+				while(!isStudentInChat() && !Teacher.didChatSessionEnd()) {}
 				
 				if(!Teacher.onlineChatSessionEnded) {
-					while(typeBQuestions!=0) {
+					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+							+ " has entered the chat");
+					while(getTypeBQuestions()!=0) {
 						//Check if the online chat session is still going
-						askTypeBQuestions();
-						while(!Teacher.didAnswer) {}
-						typeBQuestions--;
+						Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+						System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+								+ " has asked a question to the professor in the chat");
+						askedQuestion(true);
+						while(!Teacher.didTeacherAnswer()) {}
+						askedTypeBQuestion();
+						askedQuestion(false);
 						
 					}	
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " has left the chat session");
+					Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 				} else {
+					//Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " could not chat with the teacher cause the chat session hours had ended");
 				}
@@ -137,19 +175,7 @@ public class Student implements Runnable{
 		
 	}//askTypeAQuestions
 	
-	/**
-	 * Students can ask the amount of typeB questions
-	 * that they need.
-	 */
-	private synchronized void askTypeBQuestions() {
-		askedQuestion = false;
-		System.out.println("["+Main.currentTime()+"] " + studentName 
-				+ " asked a question to the professor in the chat");
-		askedQuestion = true;
-		
-	}//askTypeBQuestions
-	
-	
+
 	/**
 	 * As soon as they are done, they
 	 * just simply browse the internet until the online

@@ -11,17 +11,27 @@ public class Teacher {
 		
 	}
 	
+	public synchronized static boolean didTeacherAnswer() {
+		return didAnswer;
+	}
+	
+	public synchronized void setAnswer(boolean answer) {
+		didAnswer = answer;
+	}
 
 	public synchronized void arriveToOffice() {
 		System.out.println("["+Main.currentTime()+"] "+"The professor has arrived to the office their office");
 			
 	}
 	
+	public synchronized static boolean didChatSessionEnd() {
+		return onlineChatSessionEnded;
+	}
 	public synchronized void answerTypeAQuestions() {
 		if(questionInbox.size() != 0) {
 			System.out.println("["+Main.currentTime()+"] "+"The professor has " + questionInbox.size() + " questions in his inbox");
 			Question q = questionInbox.remove();
-			System.out.println("["+Main.currentTime()+"] "+"The professor is answering question from " +
+			System.out.println("["+Main.currentTime()+"] "+"The professor is answering a question from " +
 			q.toString());
 			try {
 				Thread.currentThread().sleep((long) (Math.random()*2000+1000));
@@ -34,22 +44,12 @@ public class Teacher {
 		}
 	}
 	
-	/**
-	 * As soon as the office hours start, the teacher
-	 * has to stop answering typeA questions. It's okay
-	 * if he can't answer all of them
-	 */
+
 	public synchronized void startOfficeHours() {
 		System.out.println("["+Main.currentTime()+"] "+"The professor has started his office hours");
 		officeHoursEnded = false;
 	}
 	
-	/**
-	 * Once the online chat session starts, he will answer
-	 * type B questions for the first student that arrived 
-	 * to the chat session.
-	 * 
-	 */
 	public synchronized void startOnlineChatSession() {
 		System.out.println("["+Main.currentTime()+"] "+"The professor has started the online chat session");
 		onlineChatSessionEnded = false;
@@ -60,21 +60,26 @@ public class Teacher {
 		if(onlineChatQueue.size() != 0) {
 			
 			Student s = onlineChatQueue.remove();
-			s.inChat = true;
+			s.setStudentInChat(true);
 			while(s.getTypeBQuestions() != 0) {
-				while(!s.askedQuestion) {}
+				setAnswer(false);
+				while(!s.didAskQuestion()) {} //busy waits
+				
 				System.out.println("["+Main.currentTime()+"] "+"The professor is answering " + s.getStudentName() + " question");
 				try {
-					Thread.currentThread().sleep(500);
+					Thread.currentThread().sleep(3000);
 					System.out.println("["+Main.currentTime()+"] "+"The professor has answered " + s.getStudentName() + " question");
+					setAnswer(true);
+					s.askedQuestion(false);
+					setAnswer(false);
+					System.out.println(s.getTypeBQuestions());
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			
-			System.out.println("["+Main.currentTime()+"] "+"The professor is done chatting with " + s.getStudentName());
-
+			System.out.println("CHAT HAS ENDED!!!!!");
 			
 		}
 		

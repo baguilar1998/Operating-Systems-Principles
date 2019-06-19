@@ -46,7 +46,7 @@ public class Timer implements Runnable{
 		while(endChatSession != counter) {
 			teacher.chatWithStudent();
 			try {
-				Thread.currentThread().sleep((long) (Math.random()*500));
+				Thread.currentThread().sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
