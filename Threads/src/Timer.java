@@ -9,7 +9,7 @@ public class Timer implements Runnable{
 		arrivalTime = 4;
 		startOfficeHour = 6;
 		endChatSession = 10;
-		endOfficeHour = 12;
+		endOfficeHour = 15;
 	}
 	
 	@Override
@@ -55,6 +55,19 @@ public class Timer implements Runnable{
 		}
 		
 		teacher.endOnlineChatSession();
+		
+		while(endOfficeHour != counter) {
+			teacher.answerTypeAQuestions();
+			try {
+				Thread.currentThread().sleep((long) (Math.random()*2000));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			counter++;
+		}
+		
+		teacher.endOfficeHours();
 		
 		// Could start the chat session at any point or not
 		// Lets assume he starts it right away

@@ -79,32 +79,35 @@ public class Student implements Runnable{
 			}
 			
 			if(typeBQuestions != 0 && !Teacher.officeHoursEnded) {
+				
 				Teacher.onlineChatQueue.add(this);
 				// Busy wait either if the student is waiting to chat for the teacher
 				// or if the student did not finish chatting with the teacher
 				System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 						+ " is waiting to chat with the professor " +typeBQuestions);
 				
-				//Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+
 				while(!isStudentInChat() && !Teacher.didChatSessionEnd()) {}
 				
 				if(!Teacher.onlineChatSessionEnded) {
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " has entered the chat");
 					while(getTypeBQuestions()!=0) {
+						
 						//Check if the online chat session is still going
-						Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 						System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 								+ " has asked a question to the professor in the chat");
 						askedQuestion(true);
 						while(!Teacher.didTeacherAnswer()) {}
 						askedTypeBQuestion();
 						askedQuestion(false);
+						Teacher.setAnswer(false);
+						//System.out.println("THIS STUDENT HAS " + typeBQuestions);
 						
 					}	
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " has left the chat session");
-					Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
+					//Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 				} else {
 					//Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
@@ -127,11 +130,6 @@ public class Student implements Runnable{
 
 	}
 
-	/**
-	 * Students can ask the amount of typeA questions
-	 * that they need. As soon as they are done, they
-	 * go on ahead and start asking their type B questions
-	 */
 	private synchronized void askTypeAQuestions() {
 		int counter = 0;
 		
@@ -176,16 +174,12 @@ public class Student implements Runnable{
 	}//askTypeAQuestions
 	
 
-	/**
-	 * As soon as they are done, they
-	 * just simply browse the internet until the online
-	 * office hours end
-	 */
 	private synchronized void browseInternet() {
 		// Use the sleep method and let the students browse the internet
 		// until the online chat session has ended
 		System.out.println("["+Main.currentTime()+"] " + studentName 
 				+ " is browsing the internet");
+		//while(!Teacher.officeHoursEnded) {}
 		/*try {
 			for(Thread s: Main.computerLab) {
 				if (s.isAlive() && s.getId() > Thread.currentThread().getId()) {

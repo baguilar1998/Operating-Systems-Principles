@@ -15,28 +15,41 @@ public class Teacher {
 		return didAnswer;
 	}
 	
-	public synchronized void setAnswer(boolean answer) {
+	public static synchronized void setAnswer(boolean answer) {
 		didAnswer = answer;
 	}
 
 	public synchronized void arriveToOffice() {
-		System.out.println("["+Main.currentTime()+"] "+"The professor has arrived to the office their office");
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has arrived to the office their office");
 			
 	}
 	
 	public synchronized static boolean didChatSessionEnd() {
 		return onlineChatSessionEnded;
 	}
+	
 	public synchronized void answerTypeAQuestions() {
+		
 		if(questionInbox.size() != 0) {
-			System.out.println("["+Main.currentTime()+"] "+"The professor has " + questionInbox.size() + " questions in his inbox");
+			
+			System.out.println("["+Main.currentTime()+"] "+"The professor has " 
+					+ questionInbox.size() + " questions in his inbox");
+			
 			Question q = questionInbox.remove();
-			System.out.println("["+Main.currentTime()+"] "+"The professor is answering a question from " +
-			q.toString());
+			
+			System.out.println("["+Main.currentTime()+"] "
+					+"The professor is answering a question from " + q.toString());
+			
 			try {
+				
 				Thread.currentThread().sleep((long) (Math.random()*2000+1000));
+				
 				questionInbox.remove();
-				System.out.println("["+Main.currentTime()+"] "+"The professor has answered " + q.getStudent().getStudentName() + " question");
+				
+				System.out.println("["+Main.currentTime()+"] "+"The professor has answered "
+						+ q.getStudent().getStudentName() + " question via email");
+				
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -46,12 +59,14 @@ public class Teacher {
 	
 
 	public synchronized void startOfficeHours() {
-		System.out.println("["+Main.currentTime()+"] "+"The professor has started his office hours");
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has started his office hours");
 		officeHoursEnded = false;
 	}
 	
 	public synchronized void startOnlineChatSession() {
-		System.out.println("["+Main.currentTime()+"] "+"The professor has started the online chat session");
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has started the online chat session");
 		onlineChatSessionEnded = false;
 	}
 	
@@ -60,38 +75,44 @@ public class Teacher {
 		if(onlineChatQueue.size() != 0) {
 			
 			Student s = onlineChatQueue.remove();
+			
 			s.setStudentInChat(true);
+			
 			while(s.getTypeBQuestions() != 0) {
+				
+				int currentBQuestions = s.getTypeBQuestions();
+				
 				setAnswer(false);
+				
 				while(!s.didAskQuestion()) {} //busy waits
 				
-				System.out.println("["+Main.currentTime()+"] "+"The professor is answering " + s.getStudentName() + " question");
+				System.out.println("["+Main.currentTime()+"] "
+						+"The professor is answering " + s.getStudentName() + " question");
 				try {
+					
 					Thread.currentThread().sleep(3000);
-					System.out.println("["+Main.currentTime()+"] "+"The professor has answered " + s.getStudentName() + " question");
+					
+					System.out.println("["+Main.currentTime()+"] "
+					+"The professor has answered " + s.getStudentName() + " question");
+					
 					setAnswer(true);
-					s.askedQuestion(false);
-					setAnswer(false);
-					System.out.println(s.getTypeBQuestions());
+					
+					while(currentBQuestions==s.getTypeBQuestions()) {}
+					
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			
-			System.out.println("CHAT HAS ENDED!!!!!");
-			
+
 		}
 		
 	}
 	
-	/**
-	 * If there are no more students are in the online chat.
-	 * End the online chat session and answer any remaining
-	 * type A questions
-	 */
+
 	public synchronized void endOnlineChatSession() {
-		System.out.println("["+Main.currentTime()+"] "+"The professor has ended the online chat session");
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has ended the online chat session");
 		onlineChatSessionEnded = true;
 	}
 	
@@ -99,12 +120,13 @@ public class Teacher {
 	 * End the office hours
 	 */
 	public synchronized void endOfficeHours() {
-		try {
+		officeHoursEnded = true;
+		/*try {
 			Thread.currentThread().sleep(30000);
 			officeHoursEnded = true;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
 }
