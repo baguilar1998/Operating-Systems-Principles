@@ -69,8 +69,7 @@ public class Timer implements Runnable{
 		
 		teacher.endOfficeHours();
 		
-		// Could start the chat session at any point or not
-		// Lets assume he starts it right away
+
 	}
 
 }

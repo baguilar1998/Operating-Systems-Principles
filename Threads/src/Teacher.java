@@ -6,10 +6,7 @@ public class Teacher {
 	private long officeHoursStart, onlineSessionStart;
 	public static boolean officeHoursEnded, onlineChatSessionEnded, didAnswer;
 	
-	public Teacher() {
-		officeHoursStart = (long) ((Math.random() *2000) + 2000);
-		
-	}
+	public Teacher() {}
 	
 	public synchronized static boolean didTeacherAnswer() {
 		return didAnswer;
@@ -44,8 +41,6 @@ public class Teacher {
 			try {
 				
 				Thread.currentThread().sleep((long) (Math.random()*2000+1000));
-				
-				questionInbox.remove();
 				
 				System.out.println("["+Main.currentTime()+"] "+"The professor has answered "
 						+ q.getStudent().getStudentName() + " question via email");
@@ -113,7 +108,7 @@ public class Teacher {
 	public synchronized void endOnlineChatSession() {
 		System.out.println("["+Main.currentTime()+"] "
 				+"The professor has ended the online chat session");
-		onlineChatSessionEnded = true;
+		onlineChatSessionEnded = true; 
 	}
 	
 	/**
@@ -121,6 +116,8 @@ public class Teacher {
 	 */
 	public synchronized void endOfficeHours() {
 		officeHoursEnded = true;
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has ended his office hours and has left the office");
 		/*try {
 			Thread.currentThread().sleep(30000);
 			officeHoursEnded = true;
