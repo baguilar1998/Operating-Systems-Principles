@@ -103,6 +103,8 @@ public class Student implements Runnable{
 
 	}
 
+	// Simulate the student emailing the professor 
+	// type A questions
 	private synchronized void askTypeAQuestions() {
 		int counter = 0;
 		
@@ -147,22 +149,27 @@ public class Student implements Runnable{
 	}
 	
 
+	// Simulating the student browsing the enter
 	private synchronized void browseInternet() {
 		// Use the sleep method and let the students browse the internet
 		// until the online chat session has ended
 		System.out.println("["+Main.currentTime()+"] " + studentName 
 				+ " is browsing the internet");
 		try {
+			// for loop that will terminate all threads in decreasing order
+			// based off of their ID
 			for(int i = 0; i<Main.studentArray.length; i++) {
 				Thread t = Main.studentArray[i];
-				if (t.isAlive() && t.getId() > Thread.currentThread().getId()) 
+				if (t.isAlive() && t.getId() < Thread.currentThread().getId()) {
 					t.join();	
+				}
 			}
-			//Thread.yield();
-			//Thread.sleep(20000);
+			//while(!Teacher.officeHoursEnded) {}
+			Thread.currentThread().sleep(100000);
+
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Student has been interrupted");
+			//System.out.println("Student has been interrupted");
 		}
 	}
 	
@@ -171,11 +178,11 @@ public class Student implements Runnable{
 	 * Synchronized Getters and Setters Methods
 	 * ----------------------------------------
 	 */
-	public synchronized void setStudentName() {
+	public void setStudentName() {
 		studentName = "Student " + studentID;
 	}
 	
-	public synchronized String getStudentName() {
+	public String getStudentName() {
 		return studentName;
 	}
 	

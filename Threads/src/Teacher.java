@@ -41,6 +41,32 @@ public class Teacher {
 		}
 	}
 	
+	public synchronized void answerRemainingQuestions() {
+		// Only answer type A questions if he has any type A questions
+		// in his inbox
+		if(questionInbox.size() != 0) {
+			
+			System.out.println("["+Main.currentTime()+"] "+"The professor has " 
+					+ questionInbox.size() + " questions in his inbox");
+			
+			Question q = questionInbox.remove();
+			
+			System.out.println("["+Main.currentTime()+"] "
+					+"The professor is answering a question from " + q.toString());
+			
+			try {
+				// Simulate the professor answering the question by using sleep()
+				Thread.currentThread().sleep((long) (Math.random()*100));
+				
+				System.out.println("["+Main.currentTime()+"] "+"The professor has answered "
+						+ q.getStudent().getStudentName() + " question via email");
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 
 	// Simulate the professor starting his office hours
 	public synchronized void startOfficeHours() {
@@ -124,9 +150,8 @@ public class Teacher {
 				try {
 					t.interrupt();
 				}catch(Exception e) {
-				
+
 				}
-				break;
 			} else {
 				continue;
 			}

@@ -69,14 +69,16 @@ public class Timer implements Runnable{
 		// End the chat session
 		teacher.endOnlineChatSession();
 
+		System.out.println("["+Main.currentTime()+"] "
+				+"The professor has some time left to answer more emails");
+		
 		// With the remaining time that the professor has, he will answer 
 		// as many type A questions as he can
 		while(endOfficeHour != counter) {
-			teacher.answerTypeAQuestions();
 			try {
+				teacher.answerTypeAQuestions();
 				Thread.currentThread().sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			counter++;
