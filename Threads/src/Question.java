@@ -1,6 +1,12 @@
-
+/**
+ * A class to hold any data that a
+ * question may contain. (Mainly Type A
+ * Question Information)
+ *
+ */
 public class Question {
 	
+	// Instance Variables
 	private long time; 
 	private Student student;
 	
@@ -13,6 +19,12 @@ public class Question {
 	public String toString() {
 		return student.getStudentName() + " which was sent at " + time + " Eastern Standard Time";
 	}
+	
+	/**
+	 * -----------------------------
+	 * Getter Methods for Questions
+	 * -----------------------------
+	 */
 	
 	public Student getStudent() {
 		return student;
