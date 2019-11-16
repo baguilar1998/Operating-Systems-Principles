@@ -1,20 +1,18 @@
 import java.util.*;
-public class Student implements Runnable{
+public class Student extends Thread{
 
 	private int typeAQuestions, typeBQuestions, studentID; 
 	private String studentName;
-	private String [] questions;
-	private static boolean CS;
+	private static boolean enterLab;
 	boolean inChat, askedQuestion, isLastQuestion;
 	
 	public Student(int a, int b, int id) {
 		typeAQuestions = a;
 		typeBQuestions = b;
-		questions = new String[typeAQuestions];
 		studentID = id;
 		inChat = false;
 		isLastQuestion = false;
-		CS = false;
+		enterLab = false;
 		setStudentName();
 	}
 	
@@ -27,20 +25,25 @@ public class Student implements Runnable{
 
 		// All students busy waits while the lab is not
 		// open
-		while(!Main.isLabOpen || CS) {} 
-		CS = true;
+		while(!Main.isLabOpen || turnToEnterLab()) {} 
+		
+		// Implementing Mutual Exclusion so only one student can enter 
+		// the lab at a time
+		setEnterLab(true);
+		
 		// If the lab is full, the student terminates
 		// else the student performs its tasks in the lab
 		if(Main.computerLab.size() == Main.capacity) {
 			System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
-					+ " cannot enter the lab because it is now full FALSE");
-			CS = false;
+					+ " cannot enter the lab because it is now full");
+			setEnterLab(false);
 		} else {
 			Main.computerLab.add(Thread.currentThread());
-			CS = false;
+			Main.currentStudents[studentID-1] = this;
+			setEnterLab(false);
 			
 			System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
-					+ " has now entered the lab TRUE");
+					+ " has now entered the lab");
 			
 			// If they have any type A questions, students will
 			// ask type A questions
@@ -56,7 +59,7 @@ public class Student implements Runnable{
 				Teacher.onlineChatQueue.add(this);
 
 				System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
-						+ " is waiting to chat with the professor ");
+						+ " is waiting to chat with the professor");
 				
 				// Busy wait while the student is not in the chat and while
 				// the chat session hours didnt end
@@ -69,6 +72,9 @@ public class Student implements Runnable{
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " has entered the chat");
 					
+					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
+							+ " has " + typeBQuestions + " question(s) that he wants to chat about");
+					
 					while(getTypeBQuestions()!=0) {
 						System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 								+ " has asked a question to the professor in the chat");
@@ -80,6 +86,7 @@ public class Student implements Runnable{
 						askedQuestion(false);
 						Teacher.setAnswer(false);
 					}	
+					
 					System.out.println("["+Main.currentTime()+"]"+" Student " + studentID 
 							+ " has left the chat session");
 				} else {
@@ -95,17 +102,15 @@ public class Student implements Runnable{
 			}
 			
 			System.out.println("["+Main.currentTime()+"]"+" Student " 
-			+ studentID + " has left the computer lab HE HAS LEFT");
+			+ studentID + " has left the computer lab");
 
 		}
-
-
 
 	}
 
 	// Simulate the student emailing the professor 
 	// type A questions
-	private synchronized void askTypeAQuestions() {
+	private void askTypeAQuestions() {
 		int counter = 0;
 		
 		System.out.println("["+Main.currentTime()+"] " + studentName + " has " 
@@ -119,20 +124,23 @@ public class Student implements Runnable{
 						+ " is figuring out the question that they want to ask");
 				
 				// Releases the student from the CPU to allow the student to think about their question
-				Thread.currentThread().yield();
+				Thread.yield();
 				
-				// Incrreases the priority of the student because they need to send an email
+				// Increases the priority of the student because they need to send an email
 				Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 				System.out.println("["+Main.currentTime()+"] " + studentName
 						+ " is emailing the professor their question");
 				
 				// Simulate the student writing the email and sending it
-				Thread.currentThread().sleep((long) ((Math.random()*5000)+1000));
+				Thread.sleep((long) ((Math.random()*5000)+1000));
+				
+				// Send the emailed question to the professor
 				Teacher.questionInbox.add(new Question(this,Main.currentTime()));
 				
 				System.out.println("["+Main.currentTime()+"] " + studentName 
 						+ " has emailed the professor their question");
 				
+				// Set the priority back to it's default value
 				Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 				
 				typeAQuestions--;
@@ -150,26 +158,31 @@ public class Student implements Runnable{
 	
 
 	// Simulating the student browsing the enter
-	private synchronized void browseInternet() {
+	private void browseInternet() {
 		// Use the sleep method and let the students browse the internet
 		// until the online chat session has ended
 		System.out.println("["+Main.currentTime()+"] " + studentName 
 				+ " is browsing the internet");
 		try {
+			
+			
 			// for loop that will terminate all threads in decreasing order
 			// based off of their ID
-			for(int i = 0; i<Main.studentArray.length; i++) {
-				Thread t = Main.studentArray[i];
-				if (t.isAlive() && t.getId() < Thread.currentThread().getId()) {
-					t.join();	
+			for(int i = 0; i<Main.currentStudents.length; i++) {
+				Student s = Main.currentStudents[i];
+				if(s!=null) {
+					if (s.isAlive() && s.getStudentID() > this.getStudentID()) {
+						s.join();	
+					}	
 				}
 			}
-			//while(!Teacher.officeHoursEnded) {}
-			Thread.currentThread().sleep(100000);
-
+			
+			// Simulate the students browsing the internet
+			Thread.sleep(100000);
+			
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			//System.out.println("Student has been interrupted");
+			// Catch the interrupt exception because it will occur
+			// when the student is interrupted
 		}
 	}
 	
@@ -180,6 +193,10 @@ public class Student implements Runnable{
 	 */
 	public void setStudentName() {
 		studentName = "Student " + studentID;
+	}
+	
+	public int getStudentID() {
+		return studentID;
 	}
 	
 	public String getStudentName() {
@@ -194,14 +211,14 @@ public class Student implements Runnable{
 		return askedQuestion;
 	}
 	
-	public synchronized void setLastQuestion(boolean s) {
-		isLastQuestion = s;
+	public void setEnterLab(boolean enter) {
+		enterLab = enter;
 	}
 	
-	public synchronized boolean lastQuestion() {
-		return isLastQuestion;
+	public synchronized boolean turnToEnterLab() {
+		return enterLab;
 	}
-	
+
 	public synchronized boolean isStudentInChat() {
 		return inChat;
 	}

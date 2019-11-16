@@ -1,11 +1,14 @@
 import java.util.*;
 public class Teacher {
 	
+	// A queue of questions that the students will send to the professor
+	// at any given moment
 	public static Queue<Question> questionInbox = new LinkedList<Question>();
+	// A queue to keep track of the line of students that are waiting to 
+	// chat with the professor
 	public static Queue<Student> onlineChatQueue = new LinkedList<Student>();
+	// Boolean values to indicate some conditions
 	public static boolean officeHoursEnded, onlineChatSessionEnded, didAnswer;
-	
-	public Teacher() {}
 	
 	// Simulating the professor arriving to the office
 	public synchronized void arriveToOffice() {
@@ -31,32 +34,6 @@ public class Teacher {
 			try {
 				// Simulate the professor answering the question by using sleep()
 				Thread.currentThread().sleep((long) (Math.random()*2000+1000));
-				
-				System.out.println("["+Main.currentTime()+"] "+"The professor has answered "
-						+ q.getStudent().getStudentName() + " question via email");
-				
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public synchronized void answerRemainingQuestions() {
-		// Only answer type A questions if he has any type A questions
-		// in his inbox
-		if(questionInbox.size() != 0) {
-			
-			System.out.println("["+Main.currentTime()+"] "+"The professor has " 
-					+ questionInbox.size() + " questions in his inbox");
-			
-			Question q = questionInbox.remove();
-			
-			System.out.println("["+Main.currentTime()+"] "
-					+"The professor is answering a question from " + q.toString());
-			
-			try {
-				// Simulate the professor answering the question by using sleep()
-				Thread.currentThread().sleep((long) (Math.random()*100));
 				
 				System.out.println("["+Main.currentTime()+"] "+"The professor has answered "
 						+ q.getStudent().getStudentName() + " question via email");
@@ -106,14 +83,14 @@ public class Teacher {
 				while(!s.didAskQuestion()) {} 
 				
 				System.out.println("["+Main.currentTime()+"] "
-						+"The professor is answering " + s.getStudentName() + " question");
+						+"The professor is answering " + s.getStudentName() + " question in the chat");
 				try {
 					
 					// Simulate the professor answering the question by using sleep()
 					Thread.currentThread().sleep(3000);
 					
 					System.out.println("["+Main.currentTime()+"] "
-					+"The professor has answered " + s.getStudentName() + " question");
+					+"The professor has answered " + s.getStudentName() + " question in the chat");
 					
 					setAnswer(true);
 					
@@ -138,14 +115,15 @@ public class Teacher {
 		onlineChatSessionEnded = true; 
 	}
 	
-
 	// Simulate the professor ending the online office hours
-	public synchronized void endOfficeHours() {
+	public void endOfficeHours() {
 		officeHoursEnded = true;
 		System.out.println("["+Main.currentTime()+"] "
 				+"The professor has ended his office hours and has left the office");
+		
+		// Interrupt all of the threads that are alive in decreasing order
 		for(int i = Main.studentArray.length-1; i>=0; i--) {
-			Thread t = Main.studentArray[i];
+			Student t = Main.studentArray[i];
 			if(t.isAlive()) {
 				try {
 					t.interrupt();

@@ -8,8 +8,8 @@ public class Timer implements Runnable{
 		teacher = t;
 		arrivalTime = 4;
 		startOfficeHour = 6;
-		endChatSession = 10;
-		endOfficeHour = 15;
+		endChatSession = 11;
+		endOfficeHour = 17;
 	}
 	
 	@Override
@@ -68,6 +68,8 @@ public class Timer implements Runnable{
 		
 		// End the chat session
 		teacher.endOnlineChatSession();
+		
+		//for(Thread t: Main.computerLab) System.out.println(t.getId());
 
 		System.out.println("["+Main.currentTime()+"] "
 				+"The professor has some time left to answer more emails");
